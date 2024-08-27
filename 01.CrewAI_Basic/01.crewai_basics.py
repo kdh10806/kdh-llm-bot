@@ -53,3 +53,5 @@ print(result)
 
 #Task 답변 기반으로 Agent가 답변을 만들고 전달함
 #RAG : 확장하는 기능 => pdf, db 데이터 조회 => 답변
+# REST API 형태로 Java Server에 구현
+#Flast, FastAPI - Spring 메인서버, AI관련 인퍼런스 값은 python 백엔드로 구현

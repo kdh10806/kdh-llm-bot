@@ -29,4 +29,12 @@ pip install langchain-ollama
 
 
 ### 3.2 Flask 사용 - 기본적인 챗봇
+1. Flask 서버 세팅
 
+2. 기본적인 라우팅 연습
+
+3. 로컬 디비 세팅
+
+4. 디비 데이터를 불러오는 REST API
+
+5. LLM과 연동
