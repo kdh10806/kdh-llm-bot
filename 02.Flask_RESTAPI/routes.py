@@ -42,13 +42,13 @@ def register_routes(app: Flask):
         
         items = crud.get_all_items(db)
         
-        return jsonify({
-            'id' : items.id,
-            'name' : items.name,
-            'price' : items.price,
-            'stock' : items.stock,
-            'created_at' : items.created_at.isoformat()
-        }), 200
+        return jsonify([{
+            'id' : new_item.id,
+            'name' : new_item.name,
+            'price' : new_item.price,
+            'stock' : new_item.stock,
+            'created_at' : new_item.created_at.isoformat()
+        } for new_item in items]), 200
     
     @app.route('/items/<int:item_id>', methods=['DELETE'])
     def delete_item_route(item_id):
