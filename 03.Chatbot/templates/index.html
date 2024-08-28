@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일상 대화 챗봇</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .messages {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .message {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 15px;
+            width: fit-content;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background-color: #e1f5fe;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .message.bot {
+            background-color: #e8eaf6;
+            align-self: flex-start;
+            text-align: left;
+        }
+
+        .input-form {
+            display: flex;
+            padding: 10px;
+            background-color: #f4f4f9;
+            border-top: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .input-form input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            margin-right: 10px;
+        }
+
+        .input-form .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-form .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-form .buttons .submit-button {
+            background-color: #42a5f5;
+        }
+
+        .input-form .buttons .submit-button:hover {
+            background-color: #1e88e5;
+        }
+
+        .input-form .buttons .reset-button {
+            background-color: #ef5350;
+        }
+
+        .input-form .buttons .reset-button:hover {
+            background-color: #e53935;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: #cfd8dc;
+            border-radius: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background-color: #f4f4f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.role }}">
+                    <strong>{{ message.role | capitalize }}:</strong> {{ message.text }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <form class="input-form" action="/" method="post">
+            <input type="text" name="user_input" placeholder="채팅을 입력하세요. :" required />
+            <div class="buttons">
+                <button type="submit" class="submit-button">보내기</button>
+            </div>
+        </form>
+        
+        <form class="input-form" action="http://localhost:5000/delete" method="get">
+            <div class="buttons">
+                <button type="submit" class="reset-button">리셋</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
