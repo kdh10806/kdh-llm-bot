@@ -2,6 +2,8 @@ from crewai import Crew, Agent, Task
 from langchain_ollama import ChatOllama
 #from openai import OpenAI
 
+# - crewai : 랜딩페이지 제작, 인스타 게시물 작성 등등 
+
 #Ollama 모델 설정
 llm = ChatOllama(
     model = 'phi3:3.8b',
