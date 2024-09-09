@@ -92,9 +92,9 @@
   <body>
     <div class="chat-container">
       {% for message in messages %}
-      <div class="message {{ message.role }}">
+      <div class="message {{ message.role == 'user' and 'user' or 'bot' }}">
         <strong>{{ message.role == 'user' and 'User' or 'Bot' }}:</strong> 
-        {{ message.content|safe }}
+        {{ message.content|safe }}  <!-- URL 변환된 내용을 안전하게 표시 -->
       </div>
       {% endfor %}
     </div>

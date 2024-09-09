@@ -2,11 +2,44 @@ import re
 from openai import OpenAI
 from sqlalchemy import text
 import os
+import requests
 
+#OpenAI 클라이언트 설정
 api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
 
-def make_prompt(conversation):
+# FAQ 리스트 가져오기 (GET 요청)
+def fetch_all_faqs():
+    faq_url = 'http://localhost:8080/cs/faq/allApi'
+    try:
+        # print(f"Sending GET request to: {faq_url}")  # 요청 URL을 확인하기 위한 로그
+        response = requests.get(faq_url)  # GET 요청을 명확히 사용
+        # print(f"Response status code: {response.status_code}")  # 응답 상태 코드 확인
+        response.raise_for_status()  # 요청 오류가 있으면 예외 발생
+        if response.status_code == 200:
+            faq_data = response.json()
+            # print("FAQ 데이터:", faq_data)  # 응답 데이터 로깅
+            if faq_data:  # 데이터가 비어있지 않은지 확인
+                return faq_data
+            else:
+                raise Exception("FAQ 데이터가 비어 있습니다.")
+        else:
+            raise Exception(f"FAQ 데이터를 불러오는 데 실패했습니다. 상태 코드: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"FAQ 데이터를 가져오는 중 오류가 발생했습니다: {e}")
+
+# GPT 모델을 사용하여 FAQ 데이터를 참고해 답변 생성
+def make_prompt(conversation, faq_data):
+    # FAQ 데이터를 prompt에 추가
+    faq_text = "\n".join([f"{faq['faq_title']}: {faq['faq_content']}" for faq in faq_data])
+    
+    # FAQ 데이터를 conversation에 추가
+    conversation.append({
+        "role": "system",
+        "content": "Here are the available FAQs:\n" + faq_text
+    })
+    
+    # GPT 모델에 요청
     res = client.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=conversation,
@@ -16,55 +49,11 @@ def make_prompt(conversation):
         frequency_penalty=0.0,
         presence_penalty=0.6
     )
+    
+    # GPT의 응답 반환
     return res.choices[0].message.content
 
-def extract_customer_name_email(input_text):
-    name_pattern = r"이름:\s*([가-힣]{2,4})"
-    email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-
-    name_match = re.search(name_pattern, input_text)
-    email_match = re.search(email_pattern, input_text)
-
-    name = name_match.group(1) if name_match else None
-    email = email_match.group(0) if email_match else None
-
-    print('유저정보', name, email)
-
-    return name, email
-
-def get_user_by_name_email(db, name, email):
-    query = "SELECT * FROM users WHERE name = :name AND email = :email"
-    result = db.execute(text(query), {"name": name, "email": email}).fetchone()
-    if result:
-        return dict(result._mapping)
-    return None
-
-def get_purchases_by_user_id(db, user_id):
-    query = text("SELECT * FROM purchases WHERE user_id = :user_id")
-    results = db.execute(query, {'user_id': user_id}).fetchall()
-    return [dict(row._mapping) for row in results]
-
-def get_purchases_with_items_by_user_id(db, user_id):
-    query = text("""
-        SELECT p.id AS purchase_id, p.quantity, p.status, p.purchase_date, 
-               i.name AS item_name, i.price AS item_price, i.stock AS item_stock 
-        FROM purchases p
-        JOIN items i ON p.item_id = i.id
-        WHERE p.user_id = :user_id
-    """)
-    results = db.execute(query, {"user_id": user_id}).fetchall()
-    return [dict(row._mapping) for row in results]
-
-def extract_purchase_id(input_text):
-    id_pattern = r"주문\s*ID\s*:\s*(\d+)"
-    match = re.search(id_pattern, input_text)
-    return int(match.group(1)) if match else None
-
-def update_status_to_canceled(db, purchase_id):
-    try:
-        query = text("UPDATE purchases SET status = 'canceled' WHERE id = :id")
-        db.execute(query, {'id': purchase_id})
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        print(f"Error updating status to canceled: {e}")
+#Url을 link 로 변환
+def convert_urls_to_links(text):
+    url_pattern = r'(http[s]?://\S+)'
+    return re.sub(url_pattern, r'<a href="\1" target="_blank">\1</a>', text)
