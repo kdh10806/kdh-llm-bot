@@ -39,12 +39,12 @@ def make_prompt(conversation, faq_data):
         "content": "Here are the available FAQs:\n" + faq_text
     })
     
-    # GPT 모델에 요청
+    # GPT 모델에 요청 (temperature 조정)
     res = client.chat.completions.create(
-        model='gpt-3.5-turbo',
+        model='gpt-4o',
         messages=conversation,
-        max_tokens=150,
-        temperature=0.7,
+        max_tokens=400,
+        temperature=0.1,
         top_p=0.9,
         frequency_penalty=0.0,
         presence_penalty=0.6
