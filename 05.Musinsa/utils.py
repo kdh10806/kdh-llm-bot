@@ -32,6 +32,7 @@ def fetch_all_faqs():
 def make_prompt(conversation, faq_data):
     # FAQ 데이터를 prompt에 추가
     faq_text = "\n".join([f"{faq['faq_title']}: {faq['faq_content']}" for faq in faq_data])
+    faq_text = "\n".join([f"{faq['faq_title']}: {faq['faq_content']}" for faq in faq_data])
     
     # FAQ 데이터를 conversation에 추가
     conversation.append({
@@ -41,7 +42,7 @@ def make_prompt(conversation, faq_data):
     
     # GPT 모델에 요청 (temperature 조정)
     res = client.chat.completions.create(
-        model='gpt-4o',
+        model='gpt-3.5-turbo',
         messages=conversation,
         max_tokens=400,
         temperature=0.1,
@@ -51,6 +52,37 @@ def make_prompt(conversation, faq_data):
     )
     
     # GPT의 응답 반환
+    return res.choices[0].message.content
+
+def summarize_faqs(faq_data):
+    #FAQ 제목과 요약된 내용을 전송
+    summarized_faqs = [
+        f"{faq['faq_title']}: {faq['faq_content'][:60]}..."  # 각 FAQ 내용을 60자로 요약
+        for faq in faq_data
+    ]
+    return summarized_faqs
+
+def make_prompt_with_summary(conversation, faq_data):
+    """FAQ 데이터를 요약한 뒤 GPT에 보내서 적절한 응답 생성"""
+    summarized_faqs = summarize_faqs(faq_data)
+
+    faq_text = "\n".join(summarized_faqs)
+    
+    conversation.append({
+        "role": "system",
+        "content": "Here are the available FAQs:\n" + faq_text
+    })
+    
+    res = client.chat.completions.create(
+        model='gpt-3.5-turbo',
+        messages=conversation,
+        max_tokens=400,
+        temperature=0.1,
+        top_p=0.9,
+        frequency_penalty=0.0,
+        presence_penalty=0.6
+    )
+    
     return res.choices[0].message.content
 
 #Url을 link 로 변환
